@@ -1,5 +1,7 @@
 import csv
 import sys
+
+from numpy.lib.type_check import imag
 sys.path.append("..")
 import os
 import numpy as np
@@ -33,17 +35,19 @@ class FaceDataset(data.Dataset):
                             if row[pointNum * 2] != '':
                                 keypoints.append((float(row[pointNum * 2]), float(row[pointNum * 2 + 1])))
                             else:
-                                keypoints.append(None)
-                        self.anno.append(copy.deepcopy(keypoints))
+                                keypoints.append((-1, -1))
+                        self.anno.append(copy.deepcopy(np.array(keypoints)))
                         keypoints.clear()
                         image = np.array(list(map(int, row[30].split(' '))), dtype = np.uint8).reshape((96, 96))
+                        image = np.expand_dims(image, axis = 0)
                         self.data.append(image)
                 elif split == "test":
                     if num > 0:
                         image = np.array(list(map(int, row[30].split(' '))), dtype = np.uint8).reshape((96, 96))
+                        image = np.expand_dims(image, axis = 0)
                         self.data.append(image)
-                if num > 3:
-                    break
+                # if num > 10:
+                #     break
 
         self.split = split
 
@@ -51,7 +55,6 @@ class FaceDataset(data.Dataset):
         if self.split == "train":
             data = self.data[index]
             anno = self.anno[index]
-
 
         elif self.split == "test":
             data = self.data[index]
@@ -66,12 +69,20 @@ class FaceDataset(data.Dataset):
 if __name__ == "__main__":
 
     dataset = FaceDataset()
-    image, anno = dataset.__getitem__(2)
+    dataloader = data.DataLoader(dataset, shuffle = True, batch_size = 3, \
+                                num_workers = 8, drop_last = False)
+    
+    for i, data in enumerate(dataloader):
 
-    print(anno)
+        image, anno = data
 
-    # cv2.imshow("face", image)
+        image = image[0][0].detach().numpy()
+        # cv2.imshow("face", image)
+        plt.imshow(image)
+
+        print(anno.shape)
+
+        break
+
     # cv2.waitKey(0)
-
-    plt.imshow(image)
     plt.show()

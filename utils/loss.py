@@ -6,24 +6,19 @@ import matplotlib.pyplot as plt
 
 def genGTHeatmaps(keyPoint):
 
-    if keyPoint != None:
-        
-        gtHeatmap = torch.zeros((96, 96))
-        coorPos = torch.tensor([keyPoint[0], keyPoint[1]])
+    gtHeatmap = torch.zeros((96, 96))
+    coorPos = torch.tensor([keyPoint[0], keyPoint[1]])
 
-        for i in range(gtHeatmap.shape[0]):
-            for j in range(gtHeatmap.shape[1]):
-                thisPos = torch.tensor([j, i], dtype = torch.float)
-                dist = torch.dist(thisPos, coorPos)
-                if dist < 1:
-                    gtHeatmap[i][j] = 1
-                elif dist < 2:
-                    gtHeatmap[i][j] = 0.8
-                else:
-                    gtHeatmap[i][j] = 1/dist
-
-    else:
-        gtHeatmap = None
+    for i in range(gtHeatmap.shape[0]):
+        for j in range(gtHeatmap.shape[1]):
+            thisPos = torch.tensor([j, i], dtype = torch.float)
+            dist = torch.dist(thisPos, coorPos)
+            if dist < 1:
+                gtHeatmap[i][j] = 1
+            elif dist < 2:
+                gtHeatmap[i][j] = 0.8
+            else:
+                gtHeatmap[i][j] = 1/dist
 
     return gtHeatmap
 
@@ -38,8 +33,9 @@ def calLoss(batchHeatmap, batchAnnolist, alpha = 2, beta = 4):
         valid = 0
 
         for kpID, keypoint in enumerate(batchAnnolist[batch]):
+
+            if keypoint[0] >= 0 and keypoint[1] >= 0:
             
-            if keypoint != None: 
                 heatMap = batchHeatmap[batch][kpID]
                 GTHeatmap = genGTHeatmaps(keypoint)
 
