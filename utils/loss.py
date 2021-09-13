@@ -3,41 +3,24 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-
-def genGTHeatmaps(keyPoint):
-
-    gtHeatmap = torch.zeros((96, 96))
-    coorPos = torch.tensor([keyPoint[0], keyPoint[1]])
-
-    for i in range(gtHeatmap.shape[0]):
-        for j in range(gtHeatmap.shape[1]):
-            thisPos = torch.tensor([j, i], dtype = torch.float)
-            dist = torch.dist(thisPos, coorPos)
-            if dist < 1:
-                gtHeatmap[i][j] = 1
-            elif dist < 2:
-                gtHeatmap[i][j] = 0.8
-            else:
-                gtHeatmap[i][j] = 1/dist
-
-    return gtHeatmap
-
-def calLoss(batchHeatmap, batchAnnolist, alpha = 2, beta = 4):
+def calLoss(batchHeatmap, batchAnnolist, batchGTHeatMapList, alpha = 2, beta = 4):
 
     lossSum = 0
 
     for batch in range(batchHeatmap.shape[0]):
 
+        GTHeatMapList = batchGTHeatMapList[batch]
         annoList = batchAnnolist[batch]
+        heatMapList = batchHeatmap[batch]
         loss = 0
         valid = 0
 
         for kpID, keypoint in enumerate(batchAnnolist[batch]):
 
             if keypoint[0] >= 0 and keypoint[1] >= 0:
-            
-                heatMap = batchHeatmap[batch][kpID]
-                GTHeatmap = genGTHeatmaps(keypoint)
+                
+                heatMap = heatMapList[kpID]
+                GTHeatmap = GTHeatMapList[kpID]
 
                 background = torch.zeros_like(heatMap)
                 foreground = torch.where(GTHeatmap > 0.8, GTHeatmap, background)
@@ -60,18 +43,19 @@ def calLoss(batchHeatmap, batchAnnolist, alpha = 2, beta = 4):
 
 if __name__ == "__main__":
 
-    annoList = [[(65.0570526316, 34.9096421053), (30.9037894737, 34.9096421053), None,
-                 None, (37.6781052632, 36.3209684211), (24.9764210526, 36.6032210526),
-                 (55.7425263158, 27.5709473684), None, (42.1938947368, 28.1354526316),
-                 (16.7911578947, 32.0871157895), None, (60.8229473684, 73.0143157895),
-                 (33.7263157895, 72.732), (47.2749473684, 70.1917894737), None]]
+    annoList = [[(65.0570526316, 34.9096421053), (30.9037894737, 34.9096421053), (-1, -1),
+                 (-1, -1), (37.6781052632, 36.3209684211), (24.9764210526, 36.6032210526),
+                 (55.7425263158, 27.5709473684), (-1, -1), (42.1938947368, 28.1354526316),
+                 (16.7911578947, 32.0871157895), (-1, -1), (60.8229473684, 73.0143157895),
+                 (33.7263157895, 72.732), (47.2749473684, 70.1917894737), (-1, -1)]]
 
-    heatmap = torch.randn((1, 1, 96, 96))
+    heatmap = torch.randn((1, 14, 96, 96)).cuda()
     heatmap = torch.sigmoid(heatmap)
     
     loss = calLoss(heatmap, annoList)
 
     print(loss)
+
 
     # GTheatmap = genGTHeatmaps(annoList[0][0])
 
