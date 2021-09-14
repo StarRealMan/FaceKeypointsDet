@@ -132,3 +132,4 @@ dmypy.json
 # User
 
 /data
+/log

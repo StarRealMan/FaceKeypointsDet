@@ -1,5 +1,4 @@
 #include<iostream>
-#include<iostream>
 #include<fstream>
 #include<sstream>
 #include<string>
@@ -72,8 +71,6 @@ int main()
 
         imgid++;
 	}
-
-        
 
     return 0;
 }

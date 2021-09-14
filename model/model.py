@@ -77,12 +77,12 @@ class FaceKeypointModel(nn.Module):
 
         self.resblockList = []
 
-        self.resblockList.append(ResBlock(chan_mag))
-        self.resblockList.append(ResBlock(chan_mag))
+        self.resblockList.append(ResBlock(chan_mag).cuda())
+        self.resblockList.append(ResBlock(chan_mag).cuda())
 
         for layerNum in range(layers - 1):
-            self.resblockList.append(DownSampleResBlock(chan_mag * 2 ** layerNum))
-            self.resblockList.append(ResBlock(chan_mag * 2 ** (layerNum + 1)))
+            self.resblockList.append(DownSampleResBlock(chan_mag * 2 ** layerNum).cuda())
+            self.resblockList.append(ResBlock(chan_mag * 2 ** (layerNum + 1)).cuda())
 
         self.encoder = nn.Sequential(
             nn.Conv2d(chan_mag * 2 ** (layers - 1), chan_mag * 2 ** (layers - 1), 3, 1, 1, 1),
@@ -90,11 +90,11 @@ class FaceKeypointModel(nn.Module):
         )
 
         self.upsampleblockList = []
-        self.upsampleblockList.append(UpSampleBlock(chan_mag * 2 ** (layers - 1)))
+        self.upsampleblockList.append(UpSampleBlock(chan_mag * 2 ** (layers - 1)).cuda())
         lastChannel = chan_mag * 2 ** (layers - 1)
 
         for layerNum in range(layers - 2, 0, -1):
-            self.upsampleblockList.append(UpSampleBlock(int(lastChannel/4) + chan_mag * 2 ** layerNum))
+            self.upsampleblockList.append(UpSampleBlock(int(lastChannel/4) + chan_mag * 2 ** layerNum).cuda())
             lastChannel = int(lastChannel/4) + chan_mag * 2 ** layerNum
 
         lastChannel = int(lastChannel/4) + chan_mag
@@ -128,17 +128,26 @@ class FaceKeypointModel(nn.Module):
 
         return output
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        torch.nn.init.normal_(m.weight, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        torch.nn.init.normal_(m.weight, 1.0, 0.02)
+        torch.nn.init.zeros_(m.bias)
 
 if __name__ == "__main__":
 
-    input = torch.randn((2, 1, 96, 96))
+    input = torch.randn((2, 1, 96, 96)).cuda()
     net = FaceKeypointModel()
+
+    net.cuda()
 
     output = net(input)
     print(output.shape)
 
     visChan = 14
-    outputNp = output[0][visChan].detach().numpy()
+    outputNp = output[0][visChan].cpu().detach().numpy()
     plt.imshow(outputNp)
     plt.show()
 
