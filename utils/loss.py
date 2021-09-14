@@ -18,7 +18,6 @@ def calLoss(batchHeatmap, batchAnnolist, batchGTHeatMapList, alpha = 2, beta = 4
         annoList = batchAnnolist[batch]
         heatMapList = batchHeatmap[batch]
         loss = 0
-        valid = 0
 
         for kpID, keypoint in enumerate(annoList):
 
@@ -39,14 +38,37 @@ def calLoss(batchHeatmap, batchAnnolist, batchGTHeatMapList, alpha = 2, beta = 4
                 loss_negative = one_GTHeatmap ** beta * heatMap ** alpha * log_one_prob
 
                 loss = loss - loss_positive.sum() - loss_negative.sum()
-                valid = valid + 1
 
             # print(- loss_positive.sum() - loss_negative.sum())
 
-        loss = loss / valid
         lossSum = lossSum + loss
 
     return lossSum
+
+def calLossMSE(batchHeatmap, batchAnnolist, batchGTHeatMapList, criterion = nn.MSELoss()):
+
+    lossSum = 0
+
+    for batch in range(batchHeatmap.shape[0]):
+
+        GTHeatMapList = batchGTHeatMapList[batch]
+        annoList = batchAnnolist[batch]
+        heatMapList = batchHeatmap[batch]
+        loss = 0
+
+        for kpID, keypoint in enumerate(annoList):
+
+            if keypoint[0] >= 0 and keypoint[1] >= 0:
+                
+                heatMap = heatMapList[kpID]
+                GTHeatmap = GTHeatMapList[kpID]
+
+                loss = loss + criterion(heatMap, GTHeatmap)
+
+        lossSum = lossSum + loss
+
+    return lossSum
+
 
 if __name__ == "__main__":
 

@@ -90,22 +90,12 @@ __global__ void Gend(float* Mapd, float x_pos, float y_pos)
 
     float dist_x = (float)map_x - x_pos;
     float dist_y = (float)map_y - y_pos;
-    
-    float dist = sqrt(dist_x * dist_x + dist_y * dist_y);
+    float dist2 = dist_x * dist_x + dist_y * dist_y;
 
-    if(dist < 1)
-    {
-        Mapd[data_idx] = 1;
-    }
-    else if(dist < 2)
-    {
-        Mapd[data_idx] = 0.8;
-    }
-    else
-    {
-        Mapd[data_idx] = 1/dist;
-    }
+    float one_sigma2 = 0.1;
 
+    Mapd[data_idx] = exp(dist2 * -0.5 * one_sigma2);
+   
     __syncthreads();
 }
 
