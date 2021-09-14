@@ -133,3 +133,4 @@ dmypy.json
 
 /data
 /log
+/model/pretrainedModel
