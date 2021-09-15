@@ -54,8 +54,8 @@ class FaceDataset(data.Dataset):
                         image = np.array(list(map(int, row[1].split(' '))), dtype = np.uint8).reshape((96, 96))
                         image = np.expand_dims(image, axis = 0)
                         self.data.append(image)
-                # if num > 100:
-                #     break
+                if num > 1000:
+                    break
             g.close()
         self.split = split
 

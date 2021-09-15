@@ -92,7 +92,7 @@ __global__ void Gend(float* Mapd, float x_pos, float y_pos)
     float dist_y = (float)map_y - y_pos;
     float dist2 = dist_x * dist_x + dist_y * dist_y;
 
-    float one_sigma2 = 0.1;
+    float one_sigma2 = 0.03;
 
     Mapd[data_idx] = exp(dist2 * -0.5 * one_sigma2);
    
