@@ -75,7 +75,7 @@ class FaceKeypointModel(nn.Module):
 
         self.layers = layers
 
-        self.resblockList = []
+        self.resblockList = nn.ModuleList()
 
         self.resblockList.append(ResBlock(chan_mag).cuda())
         self.resblockList.append(ResBlock(chan_mag).cuda())
@@ -89,7 +89,7 @@ class FaceKeypointModel(nn.Module):
             nn.ReLU(True)
         )
 
-        self.upsampleblockList = []
+        self.upsampleblockList = nn.ModuleList()
         self.upsampleblockList.append(UpSampleBlock(chan_mag * 2 ** (layers - 1)).cuda())
         lastChannel = chan_mag * 2 ** (layers - 1)
 
@@ -138,17 +138,17 @@ def weights_init(m):
 
 if __name__ == "__main__":
 
-    input = torch.randn((2, 1, 96, 96)).cuda()
+    # input = torch.randn((2, 1, 96, 96)).cuda()
     net = FaceKeypointModel()
 
-    net.cuda()
+    # net.cuda()
 
-    output = net(input)
-    print(output.shape)
+    # output = net(input)
+    # print(output.shape)
 
-    visChan = 14
-    outputNp = output[0][visChan].cpu().detach().numpy()
-    plt.imshow(outputNp)
-    plt.show()
+    # visChan = 14
+    # outputNp = output[0][visChan].cpu().detach().numpy()
+    # plt.imshow(outputNp)
+    # plt.show()
 
-
+    print(net)
